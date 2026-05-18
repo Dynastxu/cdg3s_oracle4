@@ -1,0 +1,4 @@
+streamlit==1.57.0
+pandas==2.3.3
+oracledb==4.0.0
+python-dotenv==1.2.2
