@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 from database.database import DatabaseManager
 
 db_manager = DatabaseManager()
@@ -69,6 +70,61 @@ def render_main_page():
     with col4:
         st.metric(label="待补考人数", value=stats['resit_count'])
 
+        # ---------- 图表区域 ----------
+    st.markdown("---")
+    col_left, col_right = st.columns(2)
+
+    with col_left:
+        st.subheader("学院人数分布")
+        if not college_df.empty:
+            fig1 = px.bar(college_df, x='COLLEGE_NAME', y='CNT',
+                          labels={'COLLEGE_NAME': '学院', 'CNT': '人数'},
+                          color='CNT', color_continuous_scale='Blues')
+            st.plotly_chart(fig1, use_container_width=True)
+        else:
+            st.info("暂无学院数据")
+
+    with col_right:
+        st.subheader("当前学期成绩分布（正考）")
+        if not score_dist.empty:
+            fig2 = px.pie(score_dist, values='CNT', names='GRADE',
+                          color='GRADE',
+                          color_discrete_map={
+                              '优': '#2ca02c', '良': '#98df8a',
+                              '中': '#ffbb78', '及格': '#ff7f0e',
+                              '不及格': '#d62728'
+                          })
+            fig2.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(fig2, use_container_width=True)
+        else:
+            st.info("暂无成绩数据")
+
+    st.markdown("---")
+    st.subheader("近四周缺勤趋势")
+    if not weekly_abs.empty:
+        fig3 = px.line(weekly_abs, x='WEEK_START', y='ABSENCE_COUNT',
+                       labels={'WEEK_START': '周起始日', 'ABSENCE_COUNT': '缺勤人次'},
+                       markers=True)
+        st.plotly_chart(fig3, use_container_width=True)
+    else:
+        st.info("近四周无缺勤记录")
+
+    # ---------- 快捷操作 ----------
+    st.markdown("---")
+    st.subheader("快捷操作")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        if st.button("➕ 新增学生", use_container_width=True):
+            st.switch_page("pages/1_学生信息.py")  # 后续页面自行创建
+    with col2:
+        if st.button("📝 登记缺勤", use_container_width=True):
+            st.switch_page("pages/2_缺勤登记.py")
+    with col3:
+        if st.button("📊 录入成绩", use_container_width=True):
+            st.switch_page("pages/3_成绩录入.py")
+    with col4:
+        if st.button("📋 查看报表", use_container_width=True):
+            st.switch_page("pages/4_统计报表.py")
 
 def main():
     """主函数"""
